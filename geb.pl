@@ -6,12 +6,12 @@ use strict;
 use warnings;
 
 my $args = $#ARGV + 1;
-if ($args != 1) {
-	print "geb.pl <year>";
+if ($args != 2) {
+	print "geb.pl <file.ics> <year_to_prozess>";
 	exit;
 }
 
-my $file = 'Geburtstage.ics';
+my $file = $ARGV[0];
 
 local $/ = "\r\n";
 open my $info, $file or die "Could not open $file: $!";
@@ -27,8 +27,8 @@ while( my $line = <$info>)  {
 print "Subject,Start Date,Start Time,End Date,End Time, All Day Event, Categories, Show Time As\n";
 
 while (my ($key,$val) = each %sum) {
-	#print Dumper $val;
-     	my ($year, $month, $day) = $val->{'DTSTART;VALUE=DATE'} =~ /\b(\d{4})(\d{2})(\d{2})\b/;      
+	next if (!$val->{'DTSTART;VALUE=DATE'});
+     	my ($year, $month, $day) = $val->{'DTSTART;VALUE=DATE'} =~ /\b(\d{4})(\d{2})(\d{2})\b/;
 	my ($age)  = $val->{'SUMMARY'} =~ /(\d+)/;
 	if ($age) {
 		my $nage = sprintf("%d", $age);
@@ -36,7 +36,7 @@ while (my ($key,$val) = each %sum) {
 		$val->{'SUMMARY'} =~ s/(\d+)/$next/g;
 	}
 	my $nyear = $year + 1;
-	print "$val->{'SUMMARY'},$month/$day/$nyear,,,,YES,,\n" if ($nyear eq $ARGV[0]);
+	print "$val->{'SUMMARY'},$month/$day/$nyear,,,,YES,,\n" if ($nyear eq $ARGV[1]);
 }
 
 close $info;
